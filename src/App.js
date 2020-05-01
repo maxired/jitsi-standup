@@ -110,7 +110,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        { mainState === 'init' && <ConnectForm connect={connect} domain={domain} room={room} /> }
+        { mainState === 'init' && <ConnectForm connect={connect} domain={domain} room={room} setRoom={setRoom} setDomain={setDomain} /> }
         { mainState === 'loading' && 'Loading' }
         { mainState === 'started' &&
         <div style={{

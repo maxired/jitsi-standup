@@ -1,10 +1,9 @@
 /* global JitsiMeetJS config*/
 import React, { useState, useCallback, useEffect } from 'react';
-import logo from './logo.svg';
 import './App.css';
-import { Button, TextField, Hidden } from '@material-ui/core';
 import $ from 'jquery'
-
+import { Seat } from './components/Seat';
+import { ConnectForm } from './components/ConnectForm';
 window.$  = $
 
 const connect = async ({ domain, room, config }) => {
@@ -76,7 +75,6 @@ function App() {
   const [tracks, setTracks] = useState([])
   
   const addTrack = useCallback((track) => {
-    console.log('addtrack', { track }, track.getId())
     setTracks((tracks) => {
       const hasTrack = tracks.find(_track => track.getId() === _track.getId())
 
@@ -111,7 +109,6 @@ function App() {
 
   return (
     <div className="App">
-      <div id="meet" />
       <header className="App-header">
         { mainState === 'init' && <ConnectForm connect={connect} domain={domain} room={room} /> }
         { mainState === 'loading' && 'Loading' }
@@ -132,64 +129,4 @@ function App() {
   );
 }
 
-
-const ConnectForm = ({ connect , room, domain }) =>
-
-  <form noValidate autoComplete="off" onSubmit={connect}>
-<TextField label="Jitsi instance" placeholder='https://meet.jit.si' defaultValue={domain} /><br/>
-<TextField label="room name" defaultValue={room} placeholder='daily standup' /><br/>
-<Button type="submit" color="primary">Join</Button>
-</form>
 export default App;
-
-
-const getWidthForSeats = seats => {
-  const fullWIdth = Math.min(window.innerHeight, window.innerWidth);
-
-  switch (seats) {
-  case 0: return 0;
-  case 1: return fullWIdth;
-  case 2: return fullWIdth / 2;
-  case 3: return fullWIdth / (1 + 2/ Math.sqrt(3));
-  case 4: return fullWIdth / ( 1 + Math.sqrt(2));
-  case 5: return fullWIdth / ( 1 + Math.sqrt(2 * (1 + 1/Math.sqrt(5))));
-  case 6: return fullWIdth / 3;
-  case 7: return fullWIdth / 4;
-  default: return fullWIdth / 4;
-  }
-};
-
-
-const getDistanceRatioForSeats = seats => {
-  if(seats < 2) return 0;
-
-  const width = getWidthForSeats(seats);
-
-  const fullWIdth = Math.min(window.innerHeight, window.innerWidth);
-
-  return 50 - width/2 / fullWIdth * 100
-};
-
-const Circle = ({ vertical, horizontal, size, ...props }) => (
-  <div style={{
-    position: 'absolute',
-    display: 'flex', height: size, width: size, borderRadius: size, overflow: 'hidden',justifyContent: 'center',
-    top: `calc(50% - ${size}px/2  + ${vertical}%)`,
-    left: `calc(50% - ${size}px/2 + ${horizontal}%)`,
-    }} {...props} />) 
-
-const Seat = ({  track, index, length }) => {
-
-  const seatSize = getWidthForSeats(length)
-  const disanceRatio = getDistanceRatioForSeats(length)
-
-  const angle = (360 / length) * index;
-  const horizontal = Math.cos(angle * 2 * Math.PI / 360) * disanceRatio;
-  const vertical = Math.sin(angle * 2 * Math.PI / 360) * disanceRatio;
-
-return (<Circle size={seatSize} horizontal={horizontal} vertical={vertical}>
-  <video height={seatSize} style={{flexShrink: 0 }}autoPlay='1' key={`track_${track.getId()}`} 
-          ref={(ref) => ref && track.attach(ref)} />
-</Circle>)
-
-}

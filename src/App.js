@@ -1,10 +1,12 @@
 /* global JitsiMeetJS config*/
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import './App.css';
 import $ from 'jquery'
 import { Seat } from './components/Seat';
 import { ConnectForm } from './components/ConnectForm';
 import { Audio } from './components/Audio';
+import qs from 'qs'
+
 window.$  = $
 
 const connect = async ({ domain, room, config }) => {
@@ -90,11 +92,23 @@ const useTracks = () => {
   return [tracks, addTrack, removeTrack]
 }
 
+const getDefaultParamsValue = () => {
+  const params = document.location.search.length > 1 ? qs.parse(document.location.search.slice(1)) : {}
+  debugger;
+  return {
+    room: params.room ?? 'daily_standup',
+    domain: params.domain ?? 'meet.jit.si',
+    autoJoin: params.autojoin ?? false,
+  }
+}
+
 function App() {
 
+  const defaultParams = useMemo(getDefaultParamsValue, [])
+
   const [mainState, setMainState] = useState('init')
-  const [domain, setDomain] = useState('meet.jit.si')
-  const [room, setRoom] = useState('max_daily_standup')
+  const [domain, setDomain] = useState(defaultParams.domain)
+  const [room, setRoom] = useState(defaultParams.room)
   const [conference, setConference] = useState(null)
   const [videoTracks, addVideoTrack, removeVideoTrack] = useTracks();
   const [audioTracks, addAudioTrack, removeAudioTrack] = useTracks();
@@ -110,7 +124,7 @@ function App() {
   }, [removeAudioTrack, removeVideoTrack])
 
   const connect = useCallback(async (e) => {
-    e.preventDefault()
+    e && e.preventDefault()
     setMainState('loading')
     const { connection, conference, localTrack } = await loadAndConnect({ domain, room });
     setMainState('started')
@@ -126,6 +140,11 @@ function App() {
     
   }, [addTrack, conference, removeTrack])
 
+  useEffect(() => {
+    if(defaultParams.autoJoin || defaultParams.autoJoin === ''){
+      connect()
+    }
+  }, [connect, defaultParams.autoJoin])
   return (
     <div className="App">
       <header className="App-header">

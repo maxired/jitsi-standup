@@ -4,6 +4,7 @@ import './App.css';
 import $ from 'jquery'
 import { Seat } from './components/Seat';
 import { ConnectForm } from './components/ConnectForm';
+import { Audio } from './components/Audio';
 window.$  = $
 
 const connect = async ({ domain, room, config }) => {
@@ -37,11 +38,14 @@ const join = async ({ connection, room }) => {
 const connectandJoin = async ({ domain, room, config }) => {
 
   const connection = await connect({ domain, room, config })
-  const localTracks = await JitsiMeetJS.createLocalTracks({ devices: ['video'], facingMode: 'user'}, true);
+  const localTracks = await JitsiMeetJS.createLocalTracks({ devices: ['video', 'audio'], facingMode: 'user'}, true);
 
   const conference = await join({ connection, room })
   const localTrack = localTracks.find(track => track.getType() === 'video')
   conference.addTrack(localTrack)
+  const localAudioTrack = localTracks.find(track => track.getType() === 'audio')
+  conference.addTrack(localAudioTrack)
+
   return { connection, conference, localTrack }
 }
 
@@ -65,13 +69,7 @@ const loadAndConnect = ({ domain, room}) => {
     })
 }
 
-
-function App() {
-
-  const [mainState, setMainState] = useState('init')
-  const [domain, setDomain] = useState('meet.jit.si')
-  const [room, setRoom] = useState('max_daily_standup')
-  const [conference, setConference] = useState(null)
+const useTracks = () => {
   const [tracks, setTracks] = useState([])
   
   const addTrack = useCallback((track) => {
@@ -89,6 +87,27 @@ function App() {
     setTracks((tracks) => tracks.filter(_track => track.getId() !== _track.getId()))
   }, [setTracks])
 
+  return [tracks, addTrack, removeTrack]
+}
+
+function App() {
+
+  const [mainState, setMainState] = useState('init')
+  const [domain, setDomain] = useState('meet.jit.si')
+  const [room, setRoom] = useState('max_daily_standup')
+  const [conference, setConference] = useState(null)
+  const [videoTracks, addVideoTrack, removeVideoTrack] = useTracks();
+  const [audioTracks, addAudioTrack, removeAudioTrack] = useTracks();
+  
+  const addTrack = useCallback((track) => {
+    if(track.getType() === 'video') addVideoTrack(track)
+    if(track.getType() === 'audio') addAudioTrack(track)
+  }, [ addVideoTrack, addAudioTrack ])
+
+  const removeTrack = useCallback((track) => {
+    if(track.getType() === 'video') removeVideoTrack(track)
+    if(track.getType() === 'audio') removeAudioTrack(track)
+  }, [removeAudioTrack, removeVideoTrack])
 
   const connect = useCallback(async (e) => {
     e.preventDefault()
@@ -120,7 +139,10 @@ function App() {
           borderRadius: '100%'
       }}>
         {
-          tracks.map((track, index) => <Seat track={track} index={index} length={tracks.length} />)
+          videoTracks.map((track, index) => <Seat track={track} index={index} length={videoTracks.length} key={track.getId()} />)
+        }
+        {
+          audioTracks.map((track, index) => <Audio track={track} index={index} key={track.getId()} />)
         }
        </div>}
         

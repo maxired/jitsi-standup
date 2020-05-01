@@ -1,22 +1,22 @@
 {
   "files": {
     "main.css": "/jitsi-standup/static/css/main.aeb1d389.chunk.css",
-    "main.js": "/jitsi-standup/static/js/main.bee0eb3c.chunk.js",
-    "main.js.map": "/jitsi-standup/static/js/main.bee0eb3c.chunk.js.map",
+    "main.js": "/jitsi-standup/static/js/main.7e8f5949.chunk.js",
+    "main.js.map": "/jitsi-standup/static/js/main.7e8f5949.chunk.js.map",
     "runtime-main.js": "/jitsi-standup/static/js/runtime-main.cdeadf75.js",
     "runtime-main.js.map": "/jitsi-standup/static/js/runtime-main.cdeadf75.js.map",
-    "static/js/2.4d3f545c.chunk.js": "/jitsi-standup/static/js/2.4d3f545c.chunk.js",
-    "static/js/2.4d3f545c.chunk.js.map": "/jitsi-standup/static/js/2.4d3f545c.chunk.js.map",
+    "static/js/2.606ed5aa.chunk.js": "/jitsi-standup/static/js/2.606ed5aa.chunk.js",
+    "static/js/2.606ed5aa.chunk.js.map": "/jitsi-standup/static/js/2.606ed5aa.chunk.js.map",
     "index.html": "/jitsi-standup/index.html",
-    "precache-manifest.facf1f94ddbf938d457c05507812ebde.js": "/jitsi-standup/precache-manifest.facf1f94ddbf938d457c05507812ebde.js",
+    "precache-manifest.8d94e046b274d12235c49c35329ad97c.js": "/jitsi-standup/precache-manifest.8d94e046b274d12235c49c35329ad97c.js",
     "service-worker.js": "/jitsi-standup/service-worker.js",
     "static/css/main.aeb1d389.chunk.css.map": "/jitsi-standup/static/css/main.aeb1d389.chunk.css.map",
-    "static/js/2.4d3f545c.chunk.js.LICENSE.txt": "/jitsi-standup/static/js/2.4d3f545c.chunk.js.LICENSE.txt"
+    "static/js/2.606ed5aa.chunk.js.LICENSE.txt": "/jitsi-standup/static/js/2.606ed5aa.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.cdeadf75.js",
-    "static/js/2.4d3f545c.chunk.js",
+    "static/js/2.606ed5aa.chunk.js",
     "static/css/main.aeb1d389.chunk.css",
-    "static/js/main.bee0eb3c.chunk.js"
+    "static/js/main.7e8f5949.chunk.js"
   ]
 }

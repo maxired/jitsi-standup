@@ -5,6 +5,8 @@ import $ from 'jquery'
 import { Seat } from './components/Seat';
 import { ConnectForm } from './components/ConnectForm';
 import { Audio } from './components/Audio';
+import useWindowSize from './hooks/useWindowSize'
+
 import qs from 'qs'
 
 window.$  = $
@@ -104,6 +106,7 @@ const getDefaultParamsValue = () => {
 
 function App() {
 
+  useWindowSize()
   const defaultParams = useMemo(getDefaultParamsValue, [])
 
   const [mainState, setMainState] = useState('init')
@@ -145,6 +148,8 @@ function App() {
       connect()
     }
   }, [connect, defaultParams.autoJoin])
+
+
   return (
     <div className="App">
       <header className="App-header">

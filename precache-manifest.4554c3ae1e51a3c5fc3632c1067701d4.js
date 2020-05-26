@@ -1,10 +1,10 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "071265e8625335668caca291a03e0522",
+    "revision": "e1dd3b67185ff855bbcd93b50b158b5e",
     "url": "/jitsi-standup/index.html"
   },
   {
-    "revision": "2faa7d0f20a15d73905f",
+    "revision": "c16542d858f554c1dfc5",
     "url": "/jitsi-standup/static/css/main.aeb1d389.chunk.css"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/jitsi-standup/static/js/2.f7245170.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "2faa7d0f20a15d73905f",
-    "url": "/jitsi-standup/static/js/main.315f591e.chunk.js"
+    "revision": "c16542d858f554c1dfc5",
+    "url": "/jitsi-standup/static/js/main.38d03fb4.chunk.js"
   },
   {
     "revision": "502de419e76c61f3ead9",

@@ -16,7 +16,9 @@ const connect = async ({ domain, room, config }) => {
   let serviceUrl = connectionConfig.websocket || connectionConfig.bosh;
 
   serviceUrl += `?room=${room}`;
-
+  if(serviceUrl.indexOf('//') === 0){
+    serviceUrl = `https:${serviceUrl}`
+  }
   connectionConfig.serviceUrl = connectionConfig.bosh = serviceUrl;
   
   return new Promise((resolve, reject) => {

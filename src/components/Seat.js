@@ -1,7 +1,7 @@
-import React, { useCallback, useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Circle } from './Circle';
 
-import { getWidthForSeats, getDistanceRatioForSeats } from '../utils';
+import { getWidthForSeats } from '../utils';
 
 export const Seat = ({ track, index, length, position, localposition }) => {
   const seatSize = Math.min(300, getWidthForSeats(length));

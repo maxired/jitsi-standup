@@ -188,7 +188,10 @@ function App() {
             position={ getParticipantPositionForTrack(track, localposition, participantProperties)} track={track} index={index} length={videoTracks.length} key={track.getId()} />)
         }
         {
-          audioTracks.map((track, index) => <Audio track={track} index={index} key={track.getId()} />)
+          audioTracks.map((track, index) => <Audio    
+          localposition={localposition}
+          position={ getParticipantPositionForTrack(track, localposition, participantProperties)}
+          track={track} index={index} key={track.getId()} />)
         }
        </div>}
         

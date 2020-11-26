@@ -11,6 +11,8 @@ import qs from 'qs'
 
 window.$  = $
 
+const JITSI_STANDUP_POSITION = 'jitsi_standup_position';
+
 const connect = async ({ domain, room, config }) => {
   const connectionConfig = Object.assign({}, config);
   let serviceUrl = connectionConfig.websocket || connectionConfig.bosh;
@@ -98,7 +100,6 @@ const useTracks = () => {
 
 const getDefaultParamsValue = () => {
   const params = document.location.search.length > 1 ? qs.parse(document.location.search.slice(1)) : {}
-  debugger;
   return {
     room: params.room ?? 'daily_standup',
     domain: params.domain ?? 'meet.jit.si',
@@ -128,6 +129,13 @@ function App() {
     if(track.getType() === 'audio') removeAudioTrack(track)
   }, [removeAudioTrack, removeVideoTrack])
 
+  const [participantProperties, setParticipantsProperties] = useState({});
+
+  const updateProperty = useCallback((participant, propertyName, oldValue, value) => {
+    const participantId = participant.getId();
+    setParticipantsProperties(state => ({...state, [participantId]: { ...(state[participantId]||{}), [propertyName]:value } }))
+  }, [])
+
   const connect = useCallback(async (e) => {
     e && e.preventDefault()
     setMainState('loading')
@@ -142,8 +150,11 @@ function App() {
 
     conference.on(JitsiMeetJS.events.conference.TRACK_ADDED, addTrack)
     conference.on(JitsiMeetJS.events.conference.TRACK_REMOVED, removeTrack)
+    conference.on(JitsiMeetJS.events.conference.PARTICIPANT_PROPERTY_CHANGED, updateProperty)
+
+
     
-  }, [addTrack, conference, removeTrack])
+  }, [addTrack, conference, removeTrack, updateProperty])
 
   useEffect(() => {
     if(defaultParams.autoJoin || defaultParams.autoJoin === ''){
@@ -151,21 +162,29 @@ function App() {
     }
   }, [connect, defaultParams.autoJoin])
 
+  const [localposition, setLocalPosition] = useState({})
+  const onClick = useCallback((e) => {
+    const position = { x: e.clientX, y:e.clientY}
+    setLocalPosition(position)
+    conference.setLocalParticipantProperty(JITSI_STANDUP_POSITION, JSON.stringify(position))
+  }, [conference])
 
   return (
-    <div className="App">
+    <div className="App" >
       <header className="App-header">
         { mainState === 'init' && <ConnectForm connect={connect} domain={domain} room={room} setRoom={setRoom} setDomain={setDomain} /> }
         { mainState === 'loading' && 'Loading' }
         { mainState === 'started' &&
-        <div style={{
-          height: '100vh', width: '100vw', maxHeight: '100vw', maxWidth: '100vh',
+        <div
+        onClick={onClick}
+        style={{
+          height: '100vh', width: '100vw',
           background: 'rgba(0, 100,100, 1)',
-          position: 'relative',
-          borderRadius: '100%'
-      }}>
+          position: 'relative'
+      }} >
         {
-          videoTracks.map((track, index) => <Seat track={track} index={index} length={videoTracks.length} key={track.getId()} />)
+          videoTracks.map((track, index) => <Seat
+            localposition={ getParticipantPositionForTrack(track, localposition, participantProperties)} track={track} index={index} length={videoTracks.length} key={track.getId()} />)
         }
         {
           audioTracks.map((track, index) => <Audio track={track} index={index} key={track.getId()} />)
@@ -177,4 +196,24 @@ function App() {
   );
 }
 
+const DEFAULT_POSITION =  { x: 0, y : 0 }
+const getParticipantPositionForTrack = (track, localposition, participantsProperties) => {
+  if(track.isLocal()) {
+    return localposition
+  }
+  const participantId = track.getParticipantId();
+
+  const participantProperties = participantsProperties[participantId];
+
+  console.error( 'positionis participantProperties',participantProperties, participantId )
+  if(!participantProperties) return DEFAULT_POSITION
+
+  try{
+    const participantPosition = JSON.parse(participantProperties[JITSI_STANDUP_POSITION])
+    console.error( 'positionis',participantPosition )
+    return participantPosition
+  } catch (e) { 
+    console.error( 'positionis',e )
+    return DEFAULT_POSITION}
+}
 export default App;

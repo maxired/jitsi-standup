@@ -3,14 +3,14 @@ import { Circle } from './Circle';
 
 import { getWidthForSeats, getDistanceRatioForSeats } from '../utils';
 
-export const Seat = ({ track, index, length }) => {
-  const seatSize = getWidthForSeats(length);
+export const Seat = ({ track, index, length, localposition }) => {
+  const seatSize = Math.min(300, getWidthForSeats(length));
   const disanceRatio = getDistanceRatioForSeats(length);
   const angle = (360 / length) * index;
   const horizontal = Math.cos(angle * 2 * Math.PI / 360) * disanceRatio;
   const vertical = Math.sin(angle * 2 * Math.PI / 360) * disanceRatio;
   
-  return (<Circle size={seatSize} horizontal={horizontal} vertical={vertical}>
+  return (<Circle size={seatSize} horizontal={horizontal} vertical={vertical} localposition={localposition}>
     <video height={seatSize} style={{ flexShrink: 0 }} autoPlay='1' key={`track_${track.getId()}`} ref={(ref) => ref && track.attach(ref)} />
   </Circle>);
 };

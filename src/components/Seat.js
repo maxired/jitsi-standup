@@ -1,16 +1,33 @@
-import React from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { Circle } from './Circle';
 
 import { getWidthForSeats, getDistanceRatioForSeats } from '../utils';
 
-export const Seat = ({ track, index, length, localposition }) => {
+export const Seat = ({ track, index, length, position, localposition }) => {
   const seatSize = Math.min(300, getWidthForSeats(length));
-  const disanceRatio = getDistanceRatioForSeats(length);
-  const angle = (360 / length) * index;
-  const horizontal = Math.cos(angle * 2 * Math.PI / 360) * disanceRatio;
-  const vertical = Math.sin(angle * 2 * Math.PI / 360) * disanceRatio;
   
-  return (<Circle size={seatSize} horizontal={horizontal} vertical={vertical} localposition={localposition}>
-    <video height={seatSize} style={{ flexShrink: 0 }} autoPlay='1' key={`track_${track.getId()}`} ref={(ref) => ref && track.attach(ref)} />
+  const ref = useRef(null);
+
+  const [shouldAttach, setShouldAttach] = useState(false);
+  useEffect(() => {
+    if(!ref.current) return;
+
+    const dist = Math.sqrt(Math.pow(position.x - localposition.x, 2) + Math.pow(position.y - localposition.y, 2));
+    setShouldAttach(dist < 300)
+
+  }, [track, position, localposition]);
+
+  useEffect(() => {
+    if(!ref.current) return;
+
+    if(shouldAttach){
+      track.attach(ref.current)
+    }else {
+      track.detach(ref.current)
+    }
+  }, [shouldAttach, track])
+
+  return (<Circle size={seatSize} position={position}>
+    <video height={seatSize} style={{ flexShrink: 0 }} autoPlay='1' key={`track_${track.getId()}`} ref={ref} />
   </Circle>);
 };

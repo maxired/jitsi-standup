@@ -162,7 +162,7 @@ function App() {
     }
   }, [connect, defaultParams.autoJoin])
 
-  const [localposition, setLocalPosition] = useState({})
+  const [localposition, setLocalPosition] = useState({ x: 0, y: 0})
   const onClick = useCallback((e) => {
     const position = { x: e.clientX, y:e.clientY}
     setLocalPosition(position)
@@ -184,7 +184,8 @@ function App() {
       }} >
         {
           videoTracks.map((track, index) => <Seat
-            localposition={ getParticipantPositionForTrack(track, localposition, participantProperties)} track={track} index={index} length={videoTracks.length} key={track.getId()} />)
+            localposition={localposition}
+            position={ getParticipantPositionForTrack(track, localposition, participantProperties)} track={track} index={index} length={videoTracks.length} key={track.getId()} />)
         }
         {
           audioTracks.map((track, index) => <Audio track={track} index={index} key={track.getId()} />)

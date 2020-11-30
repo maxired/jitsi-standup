@@ -1,5 +1,5 @@
 /* global JitsiMeetJS config*/
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import './App.css';
 import $ from 'jquery'
 import { Seat } from './components/Seat';
@@ -12,6 +12,8 @@ import qs from 'qs'
 window.$  = $
 
 const JITSI_STANDUP_POSITION = 'jitsi_standup_position';
+const JITSI_STANDUP_AVATAR = 'jitsi_standup_avatar';
+
 
 const connect = async ({ domain, room, config }) => {
   const connectionConfig = Object.assign({}, config);
@@ -34,21 +36,23 @@ const connect = async ({ domain, room, config }) => {
   }) 
 }
 
-const join = async ({ connection, room }) => {
+const join = async ({ connection, room, setupListeners }) => {
   const conference = connection.initJitsiConference(room, {});
 
   return new Promise(resolve => {
+    setupListeners(conference);
+    
     conference.on(JitsiMeetJS.events.conference.CONFERENCE_JOINED, () => resolve(conference));
     conference.join();
   })
 }
 
-const connectandJoin = async ({ domain, room, config }) => {
+const connectandJoin = async ({ domain, room, config, setupListeners }) => {
 
   const connection = await connect({ domain, room, config })
   const localTracks = await JitsiMeetJS.createLocalTracks({ devices: ['video', 'audio'], facingMode: 'user'}, true);
 
-  const conference = await join({ connection, room })
+  const conference = await join({ connection, room, setupListeners })
   const localTrack = localTracks.find(track => track.getType() === 'video')
   conference.addTrack(localTrack)
   const localAudioTrack = localTracks.find(track => track.getType() === 'audio')
@@ -57,7 +61,7 @@ const connectandJoin = async ({ domain, room, config }) => {
   return { connection, conference, localTrack }
 }
 
-const loadAndConnect = ({ domain, room}) => {
+const loadAndConnect = ({ domain, room, setupListeners }) => {
 
     return new Promise(( resolve ) => {
       const script = document.createElement('script')
@@ -68,7 +72,7 @@ const loadAndConnect = ({ domain, room}) => {
         configScript.src = `https://${domain}/config.js`;
         document.querySelector('head').appendChild(configScript);
         configScript.onload = () => {
-          connectandJoin({ domain, room, config }).then(resolve)
+          connectandJoin({ domain, room, config, setupListeners }).then(resolve)
         }       
       };
 
@@ -119,6 +123,21 @@ function App() {
   const [videoTracks, addVideoTrack, removeVideoTrack] = useTracks();
   const [audioTracks, addAudioTrack, removeAudioTrack] = useTracks();
   
+  const localSeatRef = useRef(null);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if(localSeatRef.current) { 
+        localSeatRef.current.getCanvasUrl((_, data) => {
+          conference.setLocalParticipantProperty(JITSI_STANDUP_AVATAR, data)
+        })
+      }
+    }, 5000)
+  
+    return () => {
+      clearInterval(interval)
+    }
+  }, [conference])
+
   const addTrack = useCallback((track) => {
     if(track.getType() === 'video') addVideoTrack(track)
     if(track.getType() === 'audio') addAudioTrack(track)
@@ -139,7 +158,14 @@ function App() {
   const connect = useCallback(async (e) => {
     e && e.preventDefault()
     setMainState('loading')
-    const { connection, conference, localTrack } = await loadAndConnect({ domain, room });
+
+    const setupListeners = (conference) => {
+      conference.on(JitsiMeetJS.events.conference.USER_JOINED, (id, participant) => {
+        setParticipantsProperties(state => ({...state, [id]: participant._properties}))
+      })
+    }
+  
+    const { connection, conference, localTrack } = await loadAndConnect({ domain, room, setupListeners });
     setMainState('started')
     setConference(conference)
     addTrack(localTrack)
@@ -179,11 +205,14 @@ function App() {
         onClick={onClick}
         style={{
           height: '100vh', width: '100vw',
-          background: 'rgba(0, 100,100, 1)',
+          backgroundColor: 'rgba(0, 100,100, 1)',
+          backgroundImage: 'url(/jitsi-standup/table.png)',
           position: 'relative'
       }} >
         {
           videoTracks.map((track, index) => <Seat
+            ownRef={track.isLocal() ? localSeatRef : null}
+            avatarUrl={getParticipantAvatarUrl(track, participantProperties)}
             localposition={localposition}
             position={ getParticipantPositionForTrack(track, localposition, participantProperties)} track={track} index={index} length={videoTracks.length} key={track.getId()} />)
         }
@@ -194,7 +223,6 @@ function App() {
           track={track} index={index} key={track.getId()} />)
         }
        </div>}
-        
       </header>
     </div>
   );
@@ -209,7 +237,6 @@ const getParticipantPositionForTrack = (track, localposition, participantsProper
 
   const participantProperties = participantsProperties[participantId];
 
-  console.error( 'positionis participantProperties',participantProperties, participantId )
   if(!participantProperties) return DEFAULT_POSITION
 
   try{
@@ -219,5 +246,15 @@ const getParticipantPositionForTrack = (track, localposition, participantsProper
   } catch (e) { 
     console.error( 'positionis',e )
     return DEFAULT_POSITION}
-}
+};
+
+const getParticipantAvatarUrl = (track, participantsProperties = {})=> {
+  const participantId = track?.getParticipantId();
+
+  const participantProperties = participantsProperties[participantId];
+
+  return participantProperties?.[JITSI_STANDUP_AVATAR] ?? 'https://images.squarespace-cdn.com/content/54b7b93ce4b0a3e130d5d232/1519987165674-QZAGZHQWHWV8OXFW6KRT/icon.png?content-type=image%2Fpng'
+
+};
+
 export default App;

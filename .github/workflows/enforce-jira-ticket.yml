@@ -1,0 +1,19 @@
+name: Enforce Jira Ticket in PR Branch Name
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  check-jira-ticket:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR branch name for Jira ticket
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const jiraPattern = /[A-Z]{2,}-\d+/;
+            const branch = context.payload.pull_request.head.ref;
+            if (!jiraPattern.test(branch)) {
+              core.setFailed(`Branch name '${branch}' does not contain a Jira ticket (e.g., ABC-123). Please include a Jira ticket in your branch name.`);
+            }
